@@ -23,43 +23,44 @@ def scrape_wikipedia(webpage, element)
     results.merge!(hash_unique)  
   end
     results.each do |k,v|
-    sub_url = v[:link]
-    begin 
-      html_content = open(sub_url).read
-      doc = Nokogiri::HTML(html_content)
-    rescue OpenURI::HTTPError => e
-      puts "Can't access #{ sub_url }"
-      puts e.message
-      puts
-      next
-    end
-    # Loop through "elements"
-    doc.search('.infobox').each do |sub_element|
-      geo_location = sub_element.css('.geo-dec').text.strip
-      results[k].merge!(geo_location: geo_location)
-      sub_element.css('tr').each do |table_row|
-      # Find Owner  
-        if table_row.css('th').text.strip == "Owner"
-          owner = table_row.css('td').text.strip
-          results[k].merge!(owner: owner)
-        end #end of owner
-      #Find total retail area 
-        if table_row.css('th').text.strip == "Total retail floor area"
-          nia = table_row.css('td').text.strip
-         results[k].merge!(nia: nia)
-        end #end of retail area
+    if v[:link].nil? == false
+      sub_url = v[:link]
+      begin 
+        html_content = open(sub_url).read
+        doc = Nokogiri::HTML(html_content)
+      rescue OpenURI::HTTPError => e
+        puts "Can't access #{ sub_url }"
+        puts e.message
+        puts
+        next
+      end
+      # Loop through "elements"
+      doc.search('.infobox').each do |sub_element|
+        geo_location = sub_element.css('.geo-dec').text.strip
+        results[k].merge!(geo_location: geo_location)
+        sub_element.css('tr').each do |table_row|
+        # Find Owner  
+          if table_row.css('th').text.strip == "Owner"
+            owner = table_row.css('td').text.strip
+            results[k].merge!(owner: owner)
+          end #end of owner
+        #Find total retail area 
+          if table_row.css('th').text.strip == "Total retail floor area"
+            nia = table_row.css('td').text.strip
+          results[k].merge!(nia: nia)
+          end #end of retail area
 
-      #Parking 
-      if table_row.css('th').text.strip == "Parking"
-        parking = table_row.css('td').text.strip
-       results[k].merge!(parking: parking)
-      end #end of parking
-      
-      end #end of table row
-      
-      p results[k]
-    end #end of sub_element
-  
+        #Parking 
+        if table_row.css('th').text.strip == "Parking"
+          parking = table_row.css('td').text.strip
+        results[k].merge!(parking: parking)
+        end #end of parking
+        
+        end #end of table row
+        
+        p results[k]
+      end #end of sub_element
+    end
   end #end of hash
   p results
 end
